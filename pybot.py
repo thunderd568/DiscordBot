@@ -60,6 +60,7 @@ class MyClient(discord.Client):
                 await message.channel.send('{} posted a BTS video! This is not permitted.'.format(real_name))
                 time.sleep(2.0)
                 await message.delete()
+                await message.channel.send('Pop!')
 
         #endif
 
@@ -119,11 +120,12 @@ class MyClient(discord.Client):
             print(attachments)
             filename = attachments[len(attachments) - 1].filename
 
-            if 'bts' in filename.lower():
+            if 'bts' in filename.lower() or 'screenshot' in filename.lower():
                 time.sleep(2.0)
                 await message.channel.send('Sorry {} you were warned. No BTS photos allowed'.format(real_name))
                 time.sleep(2.0)
                 await message.delete()
+
         #endelif
 
         # If someone wants to thank pybot
