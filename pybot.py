@@ -12,17 +12,22 @@ from django.core.exceptions import ValidationError
 from apiclient.discovery import build
 from io import BytesIO
 import urllib.parse as urlparse
-import urllib.request
 import face_recognition
 import os
-from PIL import Image
 
 
 # Constants
 BTS_IMAGES_PATH = './BTS Members/'
 MESSAGE_IMGS_PATH ='./Message Imgs/'
 
+"""
+Determines if the image passed in contains faces of any bts members
 
+img= the picture as a bytes object to pass into the face recognition functions.
+
+Return boolean True or False if a match is found. img is compared to the pictures in the path
+specified by BTS_IMAGES_PATH
+"""
 def image_is_bts_content(img):
     tolerance = 0.5 # Threshold of match for the image.
 
@@ -84,7 +89,9 @@ class MyClient(discord.Client):
         await message.channel.send('Online. 0 user suspended\n{} messages deleted. {} edited.'.format(self.messages_deleted, self.messages_edited))
     #enddef
 
-
+    """
+    Handles the message passed in if it is not from the bot itself.
+    """
     async def on_message(self, message):
         # we do not want the bot to reply to itself
         if message.author.id == self.user.id:
@@ -112,16 +119,19 @@ class MyClient(discord.Client):
         # endif
 
         # First thing to do is to check if the message contains a URL
-        if (self.is_url_(message) and 'youtube' in str(message.content)) and 'youtu.be' in str(message.content):
-            print("URL Detected")
+        if (self.is_url_(message)):
+            if 'youtube' in str(message.content) or 'youtu.be' in str(message.content):
+                print("Youtube URL Detected")
 
-            if self.is_bts_video(message):
-                time.sleep(3.0)
-                await message.channel.send('{} posted a BTS video! This is not permitted.'.format(real_name))
-                time.sleep(2.0)
-                await message.delete()
-                await message.channel.send('Pop!')
-                self.messages_deleted = self.messages_deleted + 1
+                if self.is_bts_video(message):
+                    time.sleep(3.0)
+                    await message.channel.send('Attention {}, BTS videos are prohibited.'.format(real_name))
+                    time.sleep(2.0)
+                    await message.delete()
+                    await message.channel.send('Pop!')
+                    self.messages_deleted = self.messages_deleted + 1
+                #endif
+            #endif
         #endif
 
         if message.content.startswith('hello') or message.content.startswith('Hello') or message.content.startswith('hi') or message.content.startswith('hey'):
@@ -179,7 +189,7 @@ class MyClient(discord.Client):
         elif message.attachments:
             attachments = message.attachments   # Get the list of attachments in the message.
             print(attachments)  # See the contents of the list.
-            filename = attachments[len(attachments) - 1].filename
+
             url = attachments[len(attachments) - 1].proxy_url   # Store the filename of the last one sent.
             print(f'URL of image: {url} loaded')
 
@@ -215,6 +225,13 @@ class MyClient(discord.Client):
 
     #enddef
 
+    """
+    Checks if any bts member is mentioned in the filename of the image
+    
+    filename= a string with the name of the file.
+    
+    Returns True or False if any member is found in the name of the file.
+    """
     def bts_members_in_filename(self, filename):
         for member in bts_members:
 
@@ -226,7 +243,10 @@ class MyClient(discord.Client):
         return False
     #endef
 
-
+    """
+    When a member joins pybot will greet them
+    member= the member object that joined the guild/server
+    """
     async def on_member_join(self, member):
         guild = member.guild
         if guild.system_channel is not None:
@@ -235,6 +255,9 @@ class MyClient(discord.Client):
         #endif
     #enddef
 
+    """
+    If a message is edited, Pybot will handle it by showing the before and after versions of the message.
+    """
     async def on_message_edit(self, before, after):
         if str(before.content) == str(after.content):
             return
@@ -246,28 +269,48 @@ class MyClient(discord.Client):
         await before.channel.send(fmt.format(before, after))
     #enddef
 
+    """
+    Determines if the message contains a request for a joke.
+    Returns True or False if the message contains a joke request.
+    """
     def is_joke_request(self,message):
         return 'pybot tell a joke' in message.content.lower() or 'tell a joke pybot' in message.content.lower()
     #enddef
 
+    """
+    Pybot responds to khan if message is authored by Khan
+    message= the message sent by Khan
+    """
     async def respond_to_khan(self, message):
         random_num = random.randint(0, len(khan_responses) - 1)
         time.sleep(3.0)
         await message.channel.send(khan_responses[random_num])
     #enddef
 
+    """
+    Pybot responds to Dakota if message is authored by Dakota and Pybot is mentioned.
+    message= the messsage sent my Dakota
+    """
     async def respond_to_dakota(self, message):
         random_num = random.randint(0, len(dakota_responses) - 1)
         time.sleep(3.0)
         await message.channel.send(dakota_responses[random_num])
     #enddef
 
-
+    """
+    Pybot will tell a random joke
+    message= used to acquire the channel to send the joke.
+    """
     async def tell_joke(self, message):
         time.sleep(3.0)
         await message.channel.send(pyjokes.get_joke())
     #enddef
 
+    """
+    Determines if the message is a url.
+    message= the message sent that could contain a URL.
+    Returns true or false if the URL can be validated.
+    """
     def is_url_(self, message):
         val = URLValidator()
         try:
@@ -277,6 +320,10 @@ class MyClient(discord.Client):
             return False
     #enddef
 
+    """
+    Method to determine if the video is a BTS video
+    message= the message sent.
+    """
     def is_bts_video(self, message):
         url = str(message.content)
         url_data = urlparse.urlparse(url) # parse the URL
@@ -292,6 +339,15 @@ class MyClient(discord.Client):
             if 'bts' in result['snippet']['title'].lower():
                 return True
             #endif
+
+            # Check if any of the members are mentioned now
+            for member in bts_members:
+                print("Checking for {}".format(member))
+                if member in result['snippet']['title'].lower():
+                    print('Found BTS member {} in title of video'.format(member))
+                    return True
+                #endif
+            #endfor
         #endfor
 
         return False
@@ -315,7 +371,13 @@ real_names = {'Dread_Lock': 'Dakota',
               'カジュアル': 'Khan'}
 
 #List of BTS members
-bts_members = ['jin', 'suga', 'junghook', 'rm', ' v ', 'jimin' ]
+bts_members = ['j-hope',
+               'suga',
+               'jungkook',
+               'rm', ' v ',
+               'jimin',
+               'kim seokjin',
+               'kim taehyung' ]
 
 #array of greeings for the bot
 greetings = ['Hey',
