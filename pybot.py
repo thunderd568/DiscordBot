@@ -125,13 +125,11 @@ class MyClient(discord.Client):
                 print("Youtube URL Detected")
 
                 if self.is_bts_video(message):
-                    time.sleep(3.0)
-                    await message.channel.send('Attention {}, BTS videos are prohibited.'.format(real_name))
-                    time.sleep(2.0)
-                    await message.delete()
-                    await message.channel.send('Pop!')
-                    self.messages_deleted = self.messages_deleted + 1
+                    await self.delete_video(message, real_name)
                 #endif
+                else:
+                    print("OK, not a BTS video")
+                #endelse
             #endif
             else:
                 # Check to see if the URL is an image of a BTS photo
@@ -140,11 +138,7 @@ class MyClient(discord.Client):
                 img = BytesIO(r.content)
 
                 if image_is_bts_content(img):
-                    time.sleep(2.0)
-                    await message.channel.send(
-                        'BTS detected! No BTS memes or pictures are allowed {}!'.format(real_name))
-                    time.sleep(2.0)
-                    await message.delete()
+                    await self.delete_picture(message, real_name)
                 # endif
         #endif
 
@@ -210,11 +204,9 @@ class MyClient(discord.Client):
             r = requests.get(url)
             img = BytesIO(r.content)
 
+            # If the image has BTS content, delete the message with the picture.
             if image_is_bts_content(img):
-                time.sleep(2.0)
-                await message.channel.send('BTS detected! No BTS memes or pictures are allowed {}!'.format(real_name))
-                time.sleep(2.0)
-                await message.delete()
+                await self.delete_picture(message, real_name)
             #endif
         #endelif
 
@@ -235,8 +227,26 @@ class MyClient(discord.Client):
             await message.channel.send('Pybot logging off...')
             exit()
         #endelif
+    #enddef
 
 
+    """
+    Deletes a message with a BTS picture.
+    """
+    async def delete_picture(self, message, real_name):
+        time.sleep(2.0)
+        await message.channel.send('BTS detected! No BTS memes or pictures are allowed {}!'.format(real_name))
+        time.sleep(2.0)
+        await message.delete()
+    #enddef
+
+    async def delete_video(self, message, real_name):
+        time.sleep(3.0)
+        await message.channel.send('Attention {}, BTS videos are prohibited.'.format(real_name))
+        time.sleep(2.0)
+        await message.delete()
+        await message.channel.send('Pop!')
+        self.messages_deleted = self.messages_deleted + 1
     #enddef
 
     """
