@@ -120,6 +120,7 @@ class MyClient(discord.Client):
 
         # First thing to do is to check if the message contains a URL
         if (self.is_url_(message)):
+            print("URL Detected")
             if 'youtube' in str(message.content) or 'youtu.be' in str(message.content):
                 print("Youtube URL Detected")
 
@@ -132,9 +133,22 @@ class MyClient(discord.Client):
                     self.messages_deleted = self.messages_deleted + 1
                 #endif
             #endif
+            else:
+                # Check to see if the URL is an image of a BTS photo
+                url = str(message.content)
+                r = requests.get(url)
+                img = BytesIO(r.content)
+
+                if image_is_bts_content(img):
+                    time.sleep(2.0)
+                    await message.channel.send(
+                        'BTS detected! No BTS memes or pictures are allowed {}!'.format(real_name))
+                    time.sleep(2.0)
+                    await message.delete()
+                # endif
         #endif
 
-        if message.content.startswith('hello') or message.content.startswith('Hello') or message.content.startswith('hi') or message.content.startswith('hey'):
+        if message.content.startswith('hello') or message.content.startswith('Hello') or message.content.startswith(' hi ') or message.content.startswith(' hey '):
             time.sleep(3)
             random_num = random.randint(0, len(greetings) - 1)
             random_greeting = greetings[random_num]
