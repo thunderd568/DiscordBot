@@ -33,22 +33,26 @@ def image_is_bts_content(img):
 
     # Encode the picture and prepare it for facial recognition.
     picture = face_recognition.load_image_file(img)
-    picture_encoding = face_recognition.face_encodings(picture)[0]  # I just want the first item
+    encoding_array = face_recognition.face_encodings(picture)
 
-    for file in os.listdir(BTS_IMAGES_PATH):
-        # For every file in BTS members, check if it is in fact one of the members.
-        # The bts picture to compare it to.
-        bts_picutre = face_recognition.load_image_file(BTS_IMAGES_PATH + '/' + file)
-        bts_picture_encoding = face_recognition.face_encodings(bts_picutre)[0]
+    if len(encoding_array)> 0:
+        picture_encoding = encoding_array[0]
 
-        # Compare faces
-        results = face_recognition.compare_faces([picture_encoding], bts_picture_encoding, tolerance=tolerance)
-        print(f'Results after comparing to {file}: {results}')
+        for file in os.listdir(BTS_IMAGES_PATH):
+            # For every file in BTS members, check if it is in fact one of the members.
+            # The bts picture to compare it to.
+            bts_picutre = face_recognition.load_image_file(BTS_IMAGES_PATH + '/' + file)
+            bts_picture_encoding = face_recognition.face_encodings(bts_picutre)[0]
 
-        if results[0]:
-            print("Match Found with file " + file)
-            return True
-    #endfor
+            # Compare faces
+            results = face_recognition.compare_faces([picture_encoding], bts_picture_encoding, tolerance=tolerance)
+            print(f'Results after comparing to {file}: {results}')
+
+            if results[0]:
+                print("Match Found with file " + file)
+                return True
+        #endfor
+    #endif
 
     print("No match found")
     return False
