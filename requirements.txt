@@ -1,6 +1,6 @@
 discord
 asyncio
-cmake==0.7.1
+cmake==3.14.4
 pyjokes
 URLValidator
 build
