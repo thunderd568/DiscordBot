@@ -1,11 +1,9 @@
-import aiohttp
 import discord
 import time
 import random
 import asyncio
-
 import requests
-from pyjokes import pyjokes # Despite the red lines, this works just fine. no errors
+from pyjokes import pyjokes
 from discord.ext import commands
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
@@ -35,6 +33,8 @@ def image_is_bts_content(img):
     picture = face_recognition.load_image_file(img)
     encoding_array = face_recognition.face_encodings(picture)
 
+    print("Encoding array: {}".format(encoding_array))
+
     if len(encoding_array)> 0:
         picture_encoding = encoding_array[0]
 
@@ -48,6 +48,7 @@ def image_is_bts_content(img):
             results = face_recognition.compare_faces([picture_encoding], bts_picture_encoding, tolerance=tolerance)
             print(f'Results after comparing to {file}: {results}')
 
+            # results is a boolean array.
             if results[0]:
                 print("Match Found with file " + file)
                 return True
@@ -56,7 +57,6 @@ def image_is_bts_content(img):
 
     print("No match found")
     return False
-
 #enddef
 
 
@@ -66,7 +66,7 @@ class MyClient(discord.Client):
         print('Logged in as ' + self.user.name)
         print(self.user.id)
         print('------')
-        servers = list(client.guilds)
+        servers = list(client.guilds)   # The list of servers the client is in.
 
         self.messages_deleted = 0
         self.messages_edited = 0
@@ -380,9 +380,6 @@ class MyClient(discord.Client):
 
         return False
     #enddef
-
-
-
 #endclass
 
 client = MyClient()
