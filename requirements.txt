@@ -4,4 +4,3 @@ pyjokes
 URLValidator
 build
 face_recognition
-os
