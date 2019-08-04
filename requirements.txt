@@ -2,7 +2,7 @@ discord
 asyncio
 pyjokes
 URLValidator
-ValidationError
+django.core.exceptions
 build
 BtyesIO
 urllib.parse
