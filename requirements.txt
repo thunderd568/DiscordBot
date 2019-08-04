@@ -3,7 +3,7 @@ asyncio
 pyjokes
 URLValidator
 build
-BtyesIO
+io
 urllib.parse
 face_recognition
 os
