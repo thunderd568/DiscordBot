@@ -1,0 +1,12 @@
+discord
+asyncio
+time
+random
+pyjokes
+URLValidator
+ValidationError
+build
+BtyesIO
+urllib.parse
+face_recognition
+os
